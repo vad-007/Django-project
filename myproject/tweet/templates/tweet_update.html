@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Tweet
+{% endblock %}
+
+{% block content %}
+    <h1>Edit Tweet</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Save Changes</button>
+    </form>
+    <a href="{% url 'tweet_list' %}" class="btn btn-secondary mt-3">Back to Tweet List</a>
+{% endblock %}
+

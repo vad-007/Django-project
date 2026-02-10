@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Tweet
+{% endblock %}
+
+{% block content %}
+    <h1>Tweet Detail</h1>
+    <div class="card bg-dark mx-auto" style="width: 25rem;">
+        {% if tweet.photo %}
+        <img src="{{ tweet.photo.url }}" class="card-img-top" alt="...">
+        {% endif %}
+        <div class="card-body">
+            <h5 class="card-title">{{ tweet.user.username }}</h5>
+            <p class="card-text text-start">{{ tweet.content }}</p>
+            <p class="text-muted small">Posted on: {{ tweet.created_at }}</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url 'tweet_update' tweet.id %}" class="btn btn-warning">Edit</a>
+                <a href="{% url 'tweet_delete' tweet.id %}" class="btn btn-danger">Delete</a>
+                <a href="{% url 'tweet_list' %}" class="btn btn-secondary">Back</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

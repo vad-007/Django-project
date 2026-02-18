@@ -12,8 +12,20 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file from BASE_DIR
+load_dotenv(os.path.join(BASE_DIR, ".env"), override=True)
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+if not GROQ_API_KEY:
+    print("WARNING: GROQ_API_KEY not found in environment!")
+else:
+    print(f"GROQ_API_KEY loaded: {GROQ_API_KEY[:7]}...{GROQ_API_KEY[-4:]}")
 
 
 # Quick-start development settings - unsuitable for production

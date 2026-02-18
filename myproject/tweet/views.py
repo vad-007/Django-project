@@ -3,6 +3,10 @@ from .models import Tweet
 from .forms import TweetForm,UserRegistrationForm,UserLoginForm
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .ai_service import refine_tweet_content, analyze_vibe
+import json
+
 # Create your views here.
 
 def index(request):
@@ -33,6 +37,7 @@ def tweet_create(request):
         if form.is_valid():
             tweet = form.save(commit=False)
             tweet.user = request.user
+            tweet.vibe = analyze_vibe(tweet.content)
             tweet.save()
             return redirect("tweet_list")
     else:
@@ -47,6 +52,7 @@ def tweet_update(request, pk):
         if form.is_valid():
             tweet = form.save(commit=False)
             tweet.user = request.user
+            tweet.vibe = analyze_vibe(tweet.content)
             tweet.save()
             return redirect("tweet_list")
     else:
@@ -95,3 +101,15 @@ def login_view(request):
 def logout_view(request):
     auth_logout(request)
     return redirect("login")
+
+@login_required
+def refine_tweet(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            content = data.get("content", "")
+            refined_content = refine_tweet_content(content)
+            return JsonResponse({"refined_content": refined_content})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request"}, status=405)

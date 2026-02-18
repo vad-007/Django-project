@@ -15,8 +15,53 @@
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Create Tweet</button>
+    <button type="button" id="refine-btn" class="btn btn-info mb-2">Refine with AI ✨</button>
+    <br>
+    <button type="submit" class="btn btn-primary">Create Tweet</button>
 </form>
 <a href="{% url 'tweet_list' %}">Back to Tweet List</a> 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('refine-btn').addEventListener('click', function() {
+        const contentField = document.querySelector('textarea[name="content"]');
+        const content = contentField.value;
+        const btn = this;
+
+        if (!content) {
+            alert("Please enter some text first!");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Refining...";
+
+        fetch("{% url 'refine_tweet' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.refined_content) {
+                contentField.value = data.refined_content;
+            } else if (data.error) {
+                alert("AI Error: " + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("An error occurred while refining the tweet.");
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerText = "Refine with AI ✨";
+        });
+    });
+</script>
 {% endblock %}
 

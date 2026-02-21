@@ -22,6 +22,13 @@
         {% if tweet.vibe %}
         <span class="badge bg-secondary mb-2">{{ tweet.vibe }}</span>
         {% endif %}
+        
+        {% if tweet.is_verified %}
+        <span class="badge bg-success mb-2">✅ Verified</span>
+        {% else %}
+        <span class="badge bg-danger mb-2">⚠️ Unverified</span>
+        {% endif %}
+
         <p class="card-text">{{ tweet.content }}</p>
         <div class="d-flex gap-2 justify-content-center mt-3">
             <a href="{% url 'tweet_detail' tweet.id %}" class="btn btn-sm btn-primary">View</a>

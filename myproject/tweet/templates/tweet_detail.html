@@ -16,6 +16,13 @@
             <span class="badge bg-info text-dark mb-3">{{ tweet.vibe }}</span>
             {% endif %}
             <p class="card-text text-start">{{ tweet.content }}</p>
+            
+            <div class="alert {% if tweet.is_verified %}alert-success{% else %}alert-danger{% endif %} text-start py-2">
+                <strong>AI Fact-Checker:</strong><br>
+                Score: {{ tweet.authenticity_score }}/100<br>
+                Reason: {{ tweet.fact_check_reason }}
+            </div>
+
             <p class="text-muted small">Posted on: {{ tweet.created_at }}</p>
             <div class="d-flex gap-2 justify-content-center">
                 <a href="{% url 'tweet_update' tweet.id %}" class="btn btn-warning">Edit</a>

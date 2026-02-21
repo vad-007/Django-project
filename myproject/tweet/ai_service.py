@@ -59,3 +59,43 @@ def analyze_vibe(content):
     except Exception as e:
         print(f"Error calling Groq API for vibe: {e}")
         return "✨ Neutral"
+
+def check_authenticity(content):
+    """
+    Uses Groq LLM to check if a tweet contains potentially fake news or misinformation.
+    Returns a dictionary: {'score': int, 'reason': str, 'is_verified': bool}
+    """
+    if not content:
+        return {'score': 100, 'reason': "Empty content", 'is_verified': True}
+
+    client = Groq(api_key=settings.GROQ_API_KEY)
+    
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You are an expert Fact-Checker and Safety Evaluator. Analyze the tweet for both factual accuracy AND potential harm or misinformation.
+                    - Provide a 'score' from 0 (Completely Fake, Highly Misleading, or Harmful Advice) to 100 (Verified, Safe, or Personal Opinion).
+                    - Be extremely strict with medical, health, or financial claims.
+                    - If a tweet encourages harmful behavior (e.g. 'smoking is good', 'don't wear seatbelts'), score it 0 even if it contains 'facts'.
+                    - Identify sarcasm or irony. If a tweet is a joke or satire, mention it and score it as neutral (50-60).
+                    - Provide a 1-sentence 'reason'.
+                    - Format your entire response as a JSON object: {"score": 85, "reason": "Consistent with known facts and poses no harm."}"""
+                },
+                {
+                    "role": "user",
+                    "content": f"Fact-check this tweet: {content}"
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+            response_format={"type": "json_object"}
+        )
+        import json
+        result = json.loads(chat_completion.choices[0].message.content)
+        # Add a threshold for verification
+        result['is_verified'] = result.get('score', 0) >= 70
+        return result
+    except Exception as e:
+        print(f"Error calling Groq API for fact-check: {e}")
+        return {'score': 50, 'reason': "Verification service currently unavailable.", 'is_verified': False}

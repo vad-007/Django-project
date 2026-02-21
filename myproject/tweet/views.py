@@ -4,7 +4,7 @@ from .forms import TweetForm,UserRegistrationForm,UserLoginForm
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from .ai_service import refine_tweet_content, analyze_vibe
+from .ai_service import refine_tweet_content, analyze_vibe, check_authenticity
 import json
 
 # Create your views here.
@@ -38,6 +38,13 @@ def tweet_create(request):
             tweet = form.save(commit=False)
             tweet.user = request.user
             tweet.vibe = analyze_vibe(tweet.content)
+            
+            # Perform Fact-Check
+            auth_result = check_authenticity(tweet.content)
+            tweet.is_verified = auth_result.get('is_verified', False)
+            tweet.authenticity_score = auth_result.get('score', 100)
+            tweet.fact_check_reason = auth_result.get('reason', "")
+            
             tweet.save()
             return redirect("tweet_list")
     else:
@@ -53,6 +60,13 @@ def tweet_update(request, pk):
             tweet = form.save(commit=False)
             tweet.user = request.user
             tweet.vibe = analyze_vibe(tweet.content)
+            
+            # Re-perform Fact-Check on update
+            auth_result = check_authenticity(tweet.content)
+            tweet.is_verified = auth_result.get('is_verified', False)
+            tweet.authenticity_score = auth_result.get('score', 100)
+            tweet.fact_check_reason = auth_result.get('reason', "")
+            
             tweet.save()
             return redirect("tweet_list")
     else:
